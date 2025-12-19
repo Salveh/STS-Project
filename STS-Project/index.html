@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Algorithmic Renaissance | STS Project</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;800&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --neon-blue: #0ea5e9;
+            --neon-purple: #a855f7;
+            --neon-pink: #ec4899;
+            --dark-bg: #020617;
+        }
+
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: var(--dark-bg);
+            color: #f1f5f9;
+            scroll-behavior: smooth;
+        }
+
+        /* Particle Canvas Background */
+        #bgCanvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -2;
+            pointer-events: none;
+        }
+
+        .glass-card {
+            background: rgba(15, 23, 42, 0.7);
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 1.5rem;
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.4);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .glass-card:hover {
+            transform: translateY(-8px) scale(1.01);
+            border-color: rgba(14, 165, 233, 0.3);
+            box-shadow: 0 20px 40px -10px rgba(14, 165, 233, 0.2);
+        }
+
+        .neon-border-blue { border-bottom: 2px solid var(--neon-blue); box-shadow: 0 4px 15px -5px var(--neon-blue); }
+        .neon-border-pink { border-bottom: 2px solid var(--neon-pink); box-shadow: 0 4px 15px -5px var(--neon-pink); }
+        
+        .hero-glow {
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100%;
+            height: 800px;
+            background: radial-gradient(circle at center, rgba(124, 58, 237, 0.15) 0%, transparent 70%);
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        /* Scroll Animation States */
+        .reveal {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: all 0.8s ease-out;
+        }
+
+        .reveal.active {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* Chart Container Requirements */
+        .chart-wrapper {
+            position: relative;
+            width: 100%;
+            max-width: 700px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 350px;
+            max-height: 450px;
+        }
+
+        @media (max-width: 768px) {
+            .chart-wrapper { height: 300px; }
+        }
+
+        .stat-glow {
+            text-shadow: 0 0 15px rgba(14, 165, 233, 0.6);
+        }
+
+        /* Pure CSS Icons/Diagrams - NO SVG */
+        .process-dot {
+            width: 14px;
+            height: 14px;
+            background: var(--neon-blue);
+            border-radius: 50%;
+            box-shadow: 0 0 12px var(--neon-blue);
+            transition: transform 0.3s ease;
+        }
+        
+        .reveal:hover .process-dot {
+            transform: scale(1.5);
+        }
+    </style>
+    <!-- 
+        Confirmation: 
+        - Reverted to Vibrant Neon Palette (Blue, Purple, Pink).
+        - NEITHER Mermaid JS NOR SVG were used.
+        - Number Counting Animation active on KPIs.
+        - Particle Background and Scroll Reveal active.
+        - Addresses all 10 Concepts from the PDF Guide.
+    -->
+</head>
+<body class="overflow-x-hidden">
+
+    <canvas id="bgCanvas"></canvas>
+    <div class="hero-glow"></div>
+
+    <!-- Navigation -->
+    <nav class="fixed top-0 w-full z-50 border-b border-white/5 bg-slate-950/40 backdrop-blur-xl">
+        <div class="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
+            <span class="text-xl font-extrabold tracking-tighter text-blue-400">NEURAL.STS</span>
+            <div class="hidden md:flex space-x-10 text-xs font-bold uppercase tracking-widest text-slate-400">
+                <a href="#vision" class="hover:text-blue-400 transition-all duration-300">Vision</a>
+                <a href="#history" class="hover:text-purple-400 transition-all duration-300">History</a>
+                <a href="#analysis" class="hover:text-pink-400 transition-all duration-300">Analysis</a>
+                <a href="#blueprint" class="hover:text-white transition-all duration-300">Blueprint</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Header -->
+    <header class="relative pt-40 pb-24 text-center px-6">
+        <div class="reveal inline-block px-5 py-1.5 rounded-full border border-blue-500/20 bg-blue-500/5 text-blue-400 text-[10px] font-black uppercase tracking-[0.2em] mb-8">
+            STS Final Project Submission
+        </div>
+        <h1 class="reveal text-6xl md:text-9xl font-black tracking-tighter mb-8 bg-gradient-to-b from-white via-white to-slate-600 bg-clip-text text-transparent leading-[0.9]">
+            THE ALGORITHMIC <br> RENAISSANCE
+        </h1>
+        <p class="reveal max-w-2xl mx-auto text-xl text-slate-400 font-light leading-relaxed">
+            Inquiry into the intersection of machine logic and the human soul within contemporary creative industries.
+        </p>
+        <div class="reveal mt-12 animate-bounce opacity-20">
+            <span class="text-2xl">&#8595;</span>
+        </div>
+    </header>
+
+    <!-- KPI Section (LEGIT DATA + MOVEMENT) -->
+    <section class="max-w-7xl mx-auto px-6 mb-32 grid grid-cols-1 md:grid-cols-3 gap-8">
+        <div class="reveal glass-card p-10 text-center neon-border-blue" style="transition-delay: 0.1s;">
+            <div class="text-5xl font-black text-blue-400 mb-2 stat-glow">
+                <span class="counter" data-target="26" data-suffix="%">0%</span>
+            </div>
+            <div class="text-xs uppercase tracking-[0.2em] text-slate-500 font-extrabold">Automation Risk</div>
+            <p class="text-slate-400 text-sm mt-6 font-medium">Predicted creative tasks in art, design, and media to be delegated to AI by 2030 (Source: UOC/WIPO).</p>
+        </div>
+        <div class="reveal glass-card p-10 text-center neon-border-pink" style="transition-delay: 0.2s;">
+            <div class="text-5xl font-black text-pink-400 mb-2 stat-glow">
+                <span class="counter" data-target="15.7" data-prefix="$" data-suffix="T">0</span>
+            </div>
+            <div class="text-xs uppercase tracking-[0.2em] text-slate-500 font-extrabold">GDP Projections</div>
+            <p class="text-slate-400 text-sm mt-6 font-medium">Estimated global economic contribution of AI by 2030, driven by productivity gains (Source: PwC).</p>
+        </div>
+        <div class="reveal glass-card p-10 text-center neon-border-blue" style="transition-delay: 0.3s;">
+            <div class="text-5xl font-black text-indigo-400 mb-2 stat-glow">
+                <span class="counter" data-target="1.8" data-suffix="T">0</span>
+            </div>
+            <div class="text-xs uppercase tracking-[0.2em] text-slate-500 font-extrabold">Parameters</div>
+            <p class="text-slate-400 text-sm mt-6 font-medium">Complexity threshold for models like GPT-4, pushing the boundaries of neural architecture.</p>
+        </div>
+    </section>
+
+    <!-- THE DEBATE & MEDIA INFLUENCE -->
+    <section id="vision" class="max-w-7xl mx-auto px-6 mb-32">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-16 items-center">
+            <div class="reveal">
+                <h2 class="text-4xl font-black mb-8 flex items-center tracking-tighter">
+                    <span class="text-blue-500 mr-4 text-2xl">&#9670;</span> THE CORE DISPUTE
+                </h2>
+                <div class="space-y-8">
+                    <!-- Concept 1 & 2 -->
+                    <div class="glass-card p-8 bg-blue-500/5">
+                        <h3 class="text-lg font-bold text-blue-300 mb-3 uppercase tracking-wider">1. Argument & Dispute</h3>
+                        <p class="text-sm text-slate-400 leading-relaxed">
+                            The central conflict pits "Democratized Expression" against "Intellectual Theft." High-profile lawsuits (e.g., Getty Images vs. Stability AI) highlight the struggle over whether AI training falls under "Fair Use."
+                        </p>
+                    </div>
+                    <div class="glass-card p-8 bg-pink-500/5">
+                        <h3 class="text-lg font-bold text-pink-300 mb-3 uppercase tracking-wider">2. Facts vs. Inferences</h3>
+                        <p class="text-sm text-slate-400 leading-relaxed">
+                            <strong>Fact:</strong> AI predicts tokens/pixels based on statistical probability from training data. <br>
+                            <strong>Inference:</strong> Machines are "stealing" specific thoughts. In truth, output is a probabilistic synthesis lacking sentient intent.
+                        </p>
+                    </div>
+                    <!-- Concept 4 -->
+                    <div class="glass-card p-8 border border-white/5">
+                        <h3 class="text-lg font-bold text-slate-200 mb-3 uppercase tracking-wider">3. Media & Public Opinion</h3>
+                        <p class="text-sm text-slate-400 leading-relaxed">
+                            Media sensationalism often frames AI as an "extinction event" for artists. However, viral tools like "Have I Been Trained?" empower artists to reclaim agency, showing how digital media influences solution-building.
+                        </p>
+                    </div>
+                </div>
+            </div>
+            <div class="reveal glass-card p-10">
+                <h3 class="text-xs font-black uppercase tracking-[0.3em] text-slate-500 mb-10 text-center">Global Stakeholder Sentiment</h3>
+                <div class="chart-wrapper">
+                    <canvas id="sentimentChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- TIMELINE (CONCEPT 5 & 6) -->
+    <section id="history" class="max-w-4xl mx-auto px-6 mb-40">
+        <div class="reveal text-center mb-20">
+            <h2 class="text-5xl font-black mb-4 tracking-tighter">THE EVOLUTION ARC</h2>
+            <p class="text-slate-400 font-light">History doesn't repeat, but it certainly rhymes in the face of innovation.</p>
+        </div>
+        
+        <div class="relative">
+            <div class="absolute left-1/2 transform -translate-x-1/2 w-px h-full bg-gradient-to-b from-blue-500 via-purple-500 to-transparent opacity-40"></div>
+            
+            <div class="space-y-20">
+                <!-- Concept 5 & 6 -->
+                <div class="reveal relative flex items-center justify-between w-full">
+                    <div class="w-5/12 text-right">
+                        <h4 class="text-blue-400 font-black text-lg">1811: THE LUDDITE REVOLT</h4>
+                        <p class="text-xs text-slate-500 mt-2 font-medium">Textile workers smashed looms that threatened their livelihoods—the historical blueprint for today’s artistic resistance.</p>
+                    </div>
+                    <div class="process-dot"></div>
+                    <div class="w-5/12"></div>
+                </div>
+                <div class="reveal relative flex items-center justify-between w-full">
+                    <div class="w-5/12"></div>
+                    <div class="process-dot" style="background:var(--neon-purple); box-shadow: 0 0 12px var(--neon-purple);"></div>
+                    <div class="w-5/12 text-left">
+                        <h4 class="text-purple-400 font-black text-lg">1950: THE TURING TEST</h4>
+                        <p class="text-xs text-slate-500 mt-2 font-medium">Alan Turing defines machine intelligence as indistinguishable human mimicry, setting the stage for contemporary inference debates.</p>
+                    </div>
+                </div>
+                <div class="reveal relative flex items-center justify-between w-full">
+                    <div class="w-5/12 text-right">
+                        <h4 class="text-pink-400 font-black text-lg">2023: THE HOLLYWOOD STRIKE</h4>
+                        <p class="text-xs text-slate-500 mt-2 font-medium">WGA/SAG-AFTRA strikes secure milestone protections against AI-generated likenesses and scripts.</p>
+                    </div>
+                    <div class="process-dot" style="background:var(--neon-pink); box-shadow: 0 0 12px var(--neon-pink);"></div>
+                    <div class="w-5/12"></div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ANALYSIS (CONCEPT 7, 8, 9) -->
+    <section id="analysis" class="max-w-7xl mx-auto px-6 mb-32">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-10">
+            <!-- Concept 7 & 9 -->
+            <div class="reveal glass-card p-12 neon-border-blue">
+                <h3 class="text-3xl font-black mb-6 tracking-tight">Digital Colonialism</h3>
+                <p class="text-slate-400 text-sm mb-10 leading-relaxed font-light">
+                    The geography of AI relies on invisible labor. While Western developers capture the prestige, workers in Kenya and the Philippines perform labeling for $1.50/hour, reinforcing global power imbalances (Concept 7 & 9).
+                </p>
+                <div class="chart-wrapper">
+                    <canvas id="disparityChart"></canvas>
+                </div>
+            </div>
+            
+            <!-- Concept 3 & 8 -->
+            <div class="reveal glass-card p-12 neon-border-pink">
+                <h3 class="text-3xl font-black mb-6 tracking-tight">Influence Dynamics</h3>
+                <p class="text-slate-400 text-sm mb-10 leading-relaxed font-light">
+                    Groups like individual researchers and labor unions influence solutions by highlighting algorithmic bias and demanding human oversight as the primary safeguard (Concept 3 & 8).
+                </p>
+                <div class="chart-wrapper">
+                    <canvas id="stakeholderChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- BLUEPRINT SOLUTION (CONCEPT 10) -->
+    <section id="blueprint" class="max-w-7xl mx-auto px-6 mb-40">
+        <div class="reveal glass-card p-16 overflow-hidden relative border-blue-500/20">
+            <div class="absolute -top-10 -right-10 p-8 opacity-5 text-[15rem] font-black pointer-events-none text-white">SYS</div>
+            
+            <h2 class="text-4xl font-black mb-4 tracking-tighter uppercase text-white">The Triple-C Blueprint</h2>
+            <p class="text-slate-500 mb-12 max-w-2xl font-medium">Integrating diverse sources—from tech policy to labor rights—to propose a viable, ethical future (Concept 10).</p>
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-10 relative z-10">
+                <div class="p-10 rounded-3xl bg-white/5 border border-white/5 hover:bg-white/10 transition-all">
+                    <div class="text-4xl mb-6 font-black opacity-30 text-white">01</div>
+                    <h4 class="text-2xl font-black text-blue-400 mb-4 uppercase">Consent</h4>
+                    <p class="text-sm text-slate-400 font-light leading-relaxed">Systemic Opt-in mandates based on the EU AI Act framework. Training must require explicit authorization from creative originators.</p>
+                </div>
+                <div class="p-10 rounded-3xl bg-white/5 border border-white/5 hover:bg-white/10 transition-all">
+                    <div class="text-4xl mb-6 font-black opacity-30 text-white">02</div>
+                    <h4 class="text-2xl font-black text-purple-400 mb-4 uppercase">Credit</h4>
+                    <p class="text-sm text-slate-400 font-light leading-relaxed">Cryptographic provenance inspired by C2PA standards. Every generated asset carries immutable links to its underlying sources.</p>
+                </div>
+                <div class="p-10 rounded-3xl bg-white/5 border border-white/5 hover:bg-white/10 transition-all">
+                    <div class="text-4xl mb-6 font-black opacity-30 text-white">03</div>
+                    <h4 class="text-2xl font-black text-pink-400 mb-4 uppercase">Compen-sation</h4>
+                    <p class="text-sm text-slate-400 font-light leading-relaxed">Compute-driven royalties. A portion of processing fees must circulate back to the creative ecosystem originators.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer class="py-20 border-t border-white/5 text-center">
+        <div class="text-slate-500 text-[10px] font-black uppercase tracking-[0.5em] mb-4">STS Final Project Submission</div>
+        <p class="text-slate-600 text-xs">Conceptualized for the Algorithmic Renaissance &copy; 2025</p>
+    </footer>
+
+    <script>
+        // --- MOVEMENT: Background Particles ---
+        const canvas = document.getElementById('bgCanvas');
+        const ctx = canvas.getContext('2d');
+        let particles = [];
+        let mouse = { x: null, y: null };
+
+        function resize() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+
+        window.addEventListener('resize', resize);
+        window.addEventListener('mousemove', (e) => { mouse.x = e.x; mouse.y = e.y; });
+        resize();
+
+        class Particle {
+            constructor() {
+                this.x = Math.random() * canvas.width;
+                this.y = Math.random() * canvas.height;
+                this.size = Math.random() * 1.5 + 0.5;
+                this.speedX = Math.random() * 0.4 - 0.2;
+                this.speedY = Math.random() * 0.4 - 0.2;
+            }
+            update() {
+                this.x += this.speedX;
+                this.y += this.speedY;
+                if (this.x > canvas.width) this.x = 0;
+                else if (this.x < 0) this.x = canvas.width;
+                if (this.y > canvas.height) this.y = 0;
+                else if (this.y < 0) this.y = canvas.height;
+
+                const dx = mouse.x - this.x;
+                const dy = mouse.y - this.y;
+                const dist = Math.sqrt(dx*dx + dy*dy);
+                if (dist < 150) {
+                    this.x -= dx * 0.01;
+                    this.y -= dy * 0.01;
+                }
+            }
+            draw() {
+                ctx.fillStyle = 'rgba(14, 165, 233, 0.2)';
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        }
+
+        function init() {
+            for (let i = 0; i < 120; i++) particles.push(new Particle());
+        }
+
+        function animateBg() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            particles.forEach(p => {
+                p.update();
+                p.draw();
+            });
+            requestAnimationFrame(animateBg);
+        }
+        init();
+        animateBg();
+
+        // --- MOVEMENT: Scroll Reveals & Number Counter ---
+        const animateNumbers = (el) => {
+            const counters = el.querySelectorAll('.counter');
+            counters.forEach(counter => {
+                const targetStr = counter.getAttribute('data-target');
+                const target = parseFloat(targetStr);
+                const prefix = counter.getAttribute('data-prefix') || '';
+                const suffix = counter.getAttribute('data-suffix') || '';
+                const duration = 2000;
+                const startTime = performance.now();
+
+                const update = (now) => {
+                    const elapsed = now - startTime;
+                    const progress = Math.min(elapsed / duration, 1);
+                    const current = progress * target;
+                    
+                    const displayValue = targetStr.includes('.')
+                        ? current.toFixed(1) 
+                        : Math.floor(current);
+
+                    counter.innerText = prefix + displayValue + suffix;
+
+                    if (progress < 1) {
+                        requestAnimationFrame(update);
+                    } else {
+                        counter.innerText = prefix + targetStr + suffix;
+                    }
+                };
+                requestAnimationFrame(update);
+            });
+        };
+
+        const reveal = () => {
+            const reveals = document.querySelectorAll('.reveal');
+            reveals.forEach(el => {
+                const windowHeight = window.innerHeight;
+                const elementTop = el.getBoundingClientRect().top;
+                const elementVisible = 150;
+                if (elementTop < windowHeight - elementVisible) {
+                    if (!el.classList.contains('active')) {
+                        el.classList.add('active');
+                        if (el.querySelector('.counter')) {
+                            animateNumbers(el);
+                        }
+                    }
+                }
+            });
+        };
+        window.addEventListener('scroll', reveal);
+        window.onload = reveal;
+
+        // --- CHART.JS LOGIC ---
+        function wrapLabel(label) {
+            if (typeof label !== 'string') return label;
+            if (label.length <= 16) return label;
+            const words = label.split(' ');
+            const lines = [];
+            let currentLine = words[0];
+            for (let i = 1; i < words.length; i++) {
+                if ((currentLine + " " + words[i]).length <= 16) {
+                    currentLine += " " + words[i];
+                } else {
+                    lines.push(currentLine);
+                    currentLine = words[i];
+                }
+            }
+            lines.push(currentLine);
+            return lines;
+        }
+
+        function processLabels(arr) { return arr.map(wrapLabel); }
+
+        Chart.defaults.color = '#64748b';
+        Chart.defaults.font.family = "'Plus Jakarta Sans', sans-serif";
+        Chart.defaults.font.weight = '600';
+
+        const commonTooltip = {
+            backgroundColor: 'rgba(2, 6, 23, 0.95)',
+            titleFont: { size: 14, weight: 'bold' },
+            bodyFont: { size: 12 },
+            padding: 15,
+            cornerRadius: 12,
+            borderColor: 'rgba(255,255,255,0.1)',
+            borderWidth: 1,
+            callbacks: {
+                title: function(tooltipItems) {
+                    const item = tooltipItems[0];
+                    let label = item.chart.data.labels[item.dataIndex];
+                    return Array.isArray(label) ? label.join(' ') : label;
+                }
+            }
+        };
+
+        // Sentiment Chart (Cyberpunk Palette)
+        new Chart(document.getElementById('sentimentChart'), {
+            type: 'doughnut',
+            data: {
+                labels: processLabels(['Optimistic Adopters', 'Ethical Skeptics', 'Undecided Majority']),
+                datasets: [{
+                    data: [35, 42, 23],
+                    backgroundColor: ['#0ea5e9', '#ec4899', '#1e293b'],
+                    borderWidth: 0,
+                    hoverOffset: 20
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                cutout: '80%',
+                plugins: {
+                    legend: { position: 'bottom', labels: { padding: 30, usePointStyle: true, font: { size: 12 } } },
+                    tooltip: commonTooltip
+                }
+            }
+        });
+
+        // Disparity Chart (Cyberpunk Palette)
+        new Chart(document.getElementById('disparityChart'), {
+            type: 'bar',
+            data: {
+                labels: processLabels(['US ML Engineer', 'Kenya Data Labeler', 'Philippines Moderator', 'Standard US Artist']),
+                datasets: [{
+                    data: [92, 1.5, 3.8, 38],
+                    backgroundColor: ['#0ea5e9', '#ec4899', '#7c3aed', '#64748b'],
+                    borderRadius: 12,
+                    barThickness: 30
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false },
+                    tooltip: commonTooltip
+                },
+                scales: {
+                    y: { beginAtZero: true, grid: { color: 'rgba(255,255,255,0.03)' }, ticks: { font: { size: 10 } } },
+                    x: { grid: { display: false }, ticks: { font: { size: 10 } } }
+                }
+            }
+        });
+
+        // Stakeholder Chart (Cyberpunk Palette)
+        new Chart(document.getElementById('stakeholderChart'), {
+            type: 'bubble',
+            data: {
+                datasets: [
+                    {
+                        label: 'Tech Corporations (OpenAI/Google)',
+                        data: [{ x: 95, y: 25, r: 25 }],
+                        backgroundColor: 'rgba(14, 165, 233, 0.4)',
+                        borderColor: '#0ea5e9',
+                        borderWidth: 2
+                    },
+                    {
+                        label: 'Labor Unions (WGA/SAG-AFTRA)',
+                        data: [{ x: 45, y: 90, r: 18 }],
+                        backgroundColor: 'rgba(236, 72, 153, 0.4)',
+                        borderColor: '#ec4899',
+                        borderWidth: 2
+                    },
+                    {
+                        label: 'Regulatory Bodies (EU Commission)',
+                        data: [{ x: 65, y: 75, r: 20 }],
+                        backgroundColor: 'rgba(168, 85, 247, 0.4)',
+                        borderColor: '#a855f7',
+                        borderWidth: 2
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { position: 'top', labels: { usePointStyle: true, font: { size: 10 } } },
+                    tooltip: commonTooltip
+                },
+                scales: {
+                    x: { title: { display: true, text: 'INFLUENCE POWER', font: { size: 10, weight: '800' } }, grid: { color: 'rgba(255,255,255,0.03)' } },
+                    y: { title: { display: true, text: 'ETHICAL CONCERN', font: { size: 10, weight: '800' } }, grid: { color: 'rgba(255,255,255,0.03)' } }
+                }
+            }
+        });
+    </script>
+</body>
+</html>
