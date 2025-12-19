@@ -6,14 +6,27 @@
     <title>The Algorithmic Renaissance | STS Project</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700;900&family=Cinzel:wght@400;700;900&family=Plus+Jakarta+Sans:wght@300;400;500;600;800&display=swap" rel="stylesheet">
     
     <style>
         :root {
-            --neon-blue: #0ea5e9;
-            --neon-purple: #a855f7;
-            --neon-pink: #ec4899;
-            --dark-bg: #020617;
+            --neon-blue: #38bdf8;
+            --neon-purple: #818cf8;
+            --renaissance-gold: #e2b850;
+            --titanium-slate: #1e293b;
+            --dark-bg: #030712;
+        }
+
+        * {
+            scrollbar-width: thin;
+            scrollbar-color: var(--renaissance-gold) transparent;
+        }
+
+        *::-webkit-scrollbar { width: 6px; }
+        *::-webkit-scrollbar-track { background: transparent; }
+        *::-webkit-scrollbar-thumb { 
+            background-color: var(--renaissance-gold); 
+            border-radius: 20px;
         }
 
         body {
@@ -21,54 +34,82 @@
             background-color: var(--dark-bg);
             color: #f1f5f9;
             scroll-behavior: smooth;
+            overflow-x: hidden;
         }
 
-        /* Particle Canvas Background */
+        h1, h2, h3, h4, .classical-font {
+            font-family: 'Cinzel', serif;
+            letter-spacing: 0.05em;
+        }
+
+        .grain-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+            opacity: 0.04;
+            pointer-events: none;
+            z-index: 100;
+        }
+
         #bgCanvas {
             position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
+            top: 0; left: 0; width: 100%; height: 100%;
             z-index: -2;
             pointer-events: none;
         }
 
         .glass-card {
-            background: rgba(15, 23, 42, 0.7);
-            backdrop-filter: blur(16px);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            border-radius: 1.5rem;
-            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.4);
-            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            background: rgba(17, 24, 39, 0.7);
+            backdrop-filter: blur(25px);
+            border: 1px solid rgba(226, 184, 80, 0.15);
+            border-radius: 2.5rem;
+            box-shadow: 0 15px 35px -5px rgba(0, 0, 0, 0.6);
+            transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+            position: relative;
         }
 
         .glass-card:hover {
-            transform: translateY(-8px) scale(1.01);
-            border-color: rgba(14, 165, 233, 0.3);
-            box-shadow: 0 20px 40px -10px rgba(14, 165, 233, 0.2);
+            transform: translateY(-12px);
+            border-color: var(--renaissance-gold);
+            box-shadow: 0 30px 60px -15px rgba(226, 184, 80, 0.15);
         }
 
-        .neon-border-blue { border-bottom: 2px solid var(--neon-blue); box-shadow: 0 4px 15px -5px var(--neon-blue); }
-        .neon-border-pink { border-bottom: 2px solid var(--neon-pink); box-shadow: 0 4px 15px -5px var(--neon-pink); }
-        
+        .art-frame {
+            border: 10px solid #111827;
+            box-shadow: 0 0 0 1px var(--renaissance-gold), 0 20px 40px rgba(0,0,0,0.8);
+            position: relative;
+            transition: transform 0.8s ease;
+            overflow: hidden;
+        }
+
+        .art-frame img {
+            transition: all 1.2s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .art-frame:hover img {
+            transform: scale(1.05);
+            filter: sepia(0.2) contrast(1.1) brightness(1.1);
+        }
+
         .hero-glow {
             position: absolute;
-            top: 0;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 100%;
-            height: 800px;
-            background: radial-gradient(circle at center, rgba(124, 58, 237, 0.15) 0%, transparent 70%);
+            top: 0; left: 50%; transform: translateX(-50%);
+            width: 100%; height: 1200px;
+            background: radial-gradient(circle at center, rgba(226, 184, 80, 0.08) 0%, transparent 70%);
             pointer-events: none;
             z-index: -1;
         }
 
-        /* Scroll Animation States */
+        .gold-gradient-text {
+            background: linear-gradient(135deg, #fff 0%, var(--renaissance-gold) 50%, #78350f 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
         .reveal {
             opacity: 0;
-            transform: translateY(30px);
-            transition: all 0.8s ease-out;
+            transform: translateY(40px);
+            transition: all 1s cubic-bezier(0.16, 1, 0.3, 1);
         }
 
         .reveal.active {
@@ -76,249 +117,357 @@
             transform: translateY(0);
         }
 
-        /* Chart Container Requirements */
-        .chart-wrapper {
-            position: relative;
-            width: 100%;
-            max-width: 700px;
-            margin-left: auto;
-            margin-right: auto;
-            height: 350px;
-            max-height: 450px;
+        .progress-bar {
+            position: fixed;
+            top: 0; left: 0; height: 3px;
+            background: linear-gradient(to right, transparent, var(--renaissance-gold));
+            z-index: 1000;
+            width: 0%;
         }
 
-        @media (max-width: 768px) {
-            .chart-wrapper { height: 300px; }
+        .process-dot {
+            width: 18px; height: 18px;
+            background: var(--renaissance-gold);
+            border-radius: 50%;
+            box-shadow: 0 0 20px var(--renaissance-gold);
+            z-index: 5;
         }
 
         .stat-glow {
-            text-shadow: 0 0 15px rgba(14, 165, 233, 0.6);
-        }
-
-        /* Pure CSS Icons/Diagrams - NO SVG */
-        .process-dot {
-            width: 14px;
-            height: 14px;
-            background: var(--neon-blue);
-            border-radius: 50%;
-            box-shadow: 0 0 12px var(--neon-blue);
-            transition: transform 0.3s ease;
-        }
-        
-        .reveal:hover .process-dot {
-            transform: scale(1.5);
+            text-shadow: 0 0 30px rgba(226, 184, 80, 0.5);
         }
     </style>
-    <!-- 
-        Confirmation: 
-        - Reverted to Vibrant Neon Palette (Blue, Purple, Pink).
-        - NEITHER Mermaid JS NOR SVG were used.
-        - Number Counting Animation active on KPIs.
-        - Particle Background and Scroll Reveal active.
-        - Addresses all 10 Concepts from the PDF Guide.
-    -->
 </head>
 <body class="overflow-x-hidden">
 
+    <div class="grain-overlay"></div>
+    <div class="progress-bar" id="scrollProgress"></div>
     <canvas id="bgCanvas"></canvas>
     <div class="hero-glow"></div>
 
     <!-- Navigation -->
-    <nav class="fixed top-0 w-full z-50 border-b border-white/5 bg-slate-950/40 backdrop-blur-xl">
-        <div class="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
-            <span class="text-xl font-extrabold tracking-tighter text-blue-400">NEURAL.STS</span>
-            <div class="hidden md:flex space-x-10 text-xs font-bold uppercase tracking-widest text-slate-400">
-                <a href="#vision" class="hover:text-blue-400 transition-all duration-300">Vision</a>
-                <a href="#history" class="hover:text-purple-400 transition-all duration-300">History</a>
-                <a href="#analysis" class="hover:text-pink-400 transition-all duration-300">Analysis</a>
-                <a href="#blueprint" class="hover:text-white transition-all duration-300">Blueprint</a>
+    <nav class="fixed top-0 w-full z-50 border-b border-white/5 bg-slate-950/80 backdrop-blur-xl">
+        <div class="max-w-7xl mx-auto px-6 py-4 flex justify-center items-center">
+            <div class="flex space-x-12 text-[9px] font-black uppercase tracking-[0.4em] text-slate-400">
+                <a href="#vision" class="hover:text-amber-400 transition-all duration-300">Vision</a>
+                <a href="#history" class="hover:text-amber-400 transition-all duration-300">History</a>
+                <a href="#analysis" class="hover:text-amber-400 transition-all duration-300">Analysis</a>
+                <a href="#blueprint" class="hover:text-amber-400 transition-all duration-300">Blueprint</a>
+                <a href="#references" class="hover:text-amber-400 transition-all duration-300">References</a>
             </div>
         </div>
     </nav>
 
     <!-- Hero Header -->
-    <header class="relative pt-40 pb-24 text-center px-6">
-        <div class="reveal inline-block px-5 py-1.5 rounded-full border border-blue-500/20 bg-blue-500/5 text-blue-400 text-[10px] font-black uppercase tracking-[0.2em] mb-8">
-            STS Final Project Submission
-        </div>
-        <h1 class="reveal text-6xl md:text-9xl font-black tracking-tighter mb-8 bg-gradient-to-b from-white via-white to-slate-600 bg-clip-text text-transparent leading-[0.9]">
-            THE ALGORITHMIC <br> RENAISSANCE
+    <header class="relative pt-48 pb-32 text-center px-6">
+        <h1 class="reveal text-7xl md:text-[11rem] font-black tracking-tighter mb-10 gold-gradient-text leading-[0.8]">
+            THE <br> ALGORITHMIC <br> RENAISSANCE
         </h1>
-        <p class="reveal max-w-2xl mx-auto text-xl text-slate-400 font-light leading-relaxed">
-            Inquiry into the intersection of machine logic and the human soul within contemporary creative industries.
+        <p class="reveal max-w-2xl mx-auto text-sm text-slate-400 font-medium leading-relaxed tracking-[0.4em] uppercase opacity-60 mb-16">
+            A Trans-Historical Inquiry into the Machine Soul
         </p>
-        <div class="reveal mt-12 animate-bounce opacity-20">
-            <span class="text-2xl">&#8595;</span>
+
+        <!-- Optimized Hero Layout with Lateral Decorative Panels -->
+        <div class="reveal max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+            <!-- Left Decoration -->
+            <div class="hidden lg:flex lg:col-span-2 flex-col items-end space-y-12 opacity-30 text-right">
+                <div class="border-r border-amber-500/30 pr-6">
+                    <div class="text-[9px] font-black uppercase tracking-widest text-amber-500 mb-2">Protocol 09</div>
+                    <div class="text-[10px] uppercase font-bold text-slate-400">Structural<br>Integrity</div>
+                </div>
+                <div class="border-r border-white/10 pr-6">
+                    <div class="text-[9px] font-black uppercase tracking-widest text-slate-500 mb-2">Ref: ANT-2025</div>
+                    <div class="text-[10px] uppercase font-bold text-slate-400">Actor-Network<br>Mapping</div>
+                </div>
+            </div>
+
+            <!-- Main Image -->
+            <div class="lg:col-span-8 art-frame rounded-2xl shadow-[0_0_50px_rgba(226,184,80,0.15)]">
+                <img src="https://images.unsplash.com/photo-1633167606207-d840b5070fc2?auto=format&fit=crop&q=80&w=1600" 
+                     alt="The Algorithmic Renaissance: Neural-Classical Synthesis" 
+                     class="w-full h-[550px] object-cover opacity-95">
+                <div class="absolute bottom-0 w-full bg-slate-950/80 backdrop-blur-md p-6 text-[11px] uppercase tracking-[0.3em] text-amber-500 classical-font">
+                    Digital Archetype: The Intersection of High Humanism and Computational Logic
+                </div>
+            </div>
+
+            <!-- Right Decoration -->
+            <div class="hidden lg:flex lg:col-span-2 flex-col items-start space-y-12 opacity-30 text-left">
+                <div class="border-l border-amber-500/30 pl-6">
+                    <div class="text-[9px] font-black uppercase tracking-widest text-amber-500 mb-2">Module Sigma</div>
+                    <div class="text-[10px] uppercase font-bold text-slate-400">Humanist<br>Framework</div>
+                </div>
+                <div class="border-l border-white/10 pl-6">
+                    <div class="text-[9px] font-black uppercase tracking-widest text-slate-500 mb-2">Verification</div>
+                    <div class="text-[10px] uppercase font-bold text-slate-400">Cryptographic<br>Lineage</div>
+                </div>
+            </div>
         </div>
     </header>
 
-    <!-- KPI Section (LEGIT DATA + MOVEMENT) -->
-    <section class="max-w-7xl mx-auto px-6 mb-32 grid grid-cols-1 md:grid-cols-3 gap-8">
-        <div class="reveal glass-card p-10 text-center neon-border-blue" style="transition-delay: 0.1s;">
-            <div class="text-5xl font-black text-blue-400 mb-2 stat-glow">
+    <!-- KPI Section -->
+    <section class="max-w-7xl mx-auto px-6 mb-48 grid grid-cols-1 md:grid-cols-3 gap-12">
+        <div class="reveal glass-card p-14 text-center border-t border-amber-500/20">
+            <div class="text-6xl font-black text-amber-500 mb-4 stat-glow">
                 <span class="counter" data-target="26" data-suffix="%">0%</span>
             </div>
-            <div class="text-xs uppercase tracking-[0.2em] text-slate-500 font-extrabold">Automation Risk</div>
-            <p class="text-slate-400 text-sm mt-6 font-medium">Predicted creative tasks in art, design, and media to be delegated to AI by 2030 (Source: UOC/WIPO).</p>
+            <h4 class="text-[10px] uppercase tracking-[0.4em] text-slate-500 font-black mb-6">Automation Index</h4>
+            <p class="text-slate-400 text-xs leading-relaxed font-medium italic">Projected transition of creative labor to generative systems by the year 2030.</p>
         </div>
-        <div class="reveal glass-card p-10 text-center neon-border-pink" style="transition-delay: 0.2s;">
-            <div class="text-5xl font-black text-pink-400 mb-2 stat-glow">
+        <div class="reveal glass-card p-14 text-center border-t border-amber-500/20">
+            <div class="text-6xl font-black text-amber-500 mb-4 stat-glow">
                 <span class="counter" data-target="15.7" data-prefix="$" data-suffix="T">0</span>
             </div>
-            <div class="text-xs uppercase tracking-[0.2em] text-slate-500 font-extrabold">GDP Projections</div>
-            <p class="text-slate-400 text-sm mt-6 font-medium">Estimated global economic contribution of AI by 2030, driven by productivity gains (Source: PwC).</p>
+            <h4 class="text-[10px] uppercase tracking-[0.4em] text-slate-500 font-black mb-6">Economic Surge</h4>
+            <p class="text-slate-400 text-xs leading-relaxed font-medium italic">Global GDP enhancement driven by algorithmic optimization protocols.</p>
         </div>
-        <div class="reveal glass-card p-10 text-center neon-border-blue" style="transition-delay: 0.3s;">
-            <div class="text-5xl font-black text-indigo-400 mb-2 stat-glow">
+        <div class="reveal glass-card p-14 text-center border-t border-amber-500/20">
+            <div class="text-6xl font-black text-amber-500 mb-4 stat-glow">
                 <span class="counter" data-target="1.8" data-suffix="T">0</span>
             </div>
-            <div class="text-xs uppercase tracking-[0.2em] text-slate-500 font-extrabold">Parameters</div>
-            <p class="text-slate-400 text-sm mt-6 font-medium">Complexity threshold for models like GPT-4, pushing the boundaries of neural architecture.</p>
+            <h4 class="text-[10px] uppercase tracking-[0.4em] text-slate-500 font-black mb-6">Synaptic Scale</h4>
+            <p class="text-slate-400 text-xs leading-relaxed font-medium italic">Parameter complexity of current frontier models surpassing human neural expectations.</p>
         </div>
     </section>
 
-    <!-- THE DEBATE & MEDIA INFLUENCE -->
-    <section id="vision" class="max-w-7xl mx-auto px-6 mb-32">
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-16 items-center">
+    <!-- THE DEBATE -->
+    <section id="vision" class="max-w-7xl mx-auto px-6 mb-48">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-24 items-center">
             <div class="reveal">
-                <h2 class="text-4xl font-black mb-8 flex items-center tracking-tighter">
-                    <span class="text-blue-500 mr-4 text-2xl">&#9670;</span> THE CORE DISPUTE
+                <h2 class="text-6xl font-black mb-12 flex items-center tracking-tighter text-white uppercase leading-none">
+                    <span class="text-amber-600 mr-6 text-5xl">❖</span> THE <br> DISPUTE
                 </h2>
-                <div class="space-y-8">
-                    <!-- Concept 1 & 2 -->
-                    <div class="glass-card p-8 bg-blue-500/5">
-                        <h3 class="text-lg font-bold text-blue-300 mb-3 uppercase tracking-wider">1. Argument & Dispute</h3>
-                        <p class="text-sm text-slate-400 leading-relaxed">
-                            The central conflict pits "Democratized Expression" against "Intellectual Theft." High-profile lawsuits (e.g., Getty Images vs. Stability AI) highlight the struggle over whether AI training falls under "Fair Use."
-                        </p>
+                <div class="space-y-12">
+                    <div class="glass-card p-12 bg-amber-500/5">
+                        <div class="flex flex-col md:flex-row gap-8 mb-8">
+                            <div class="md:w-1/3 art-frame rounded-xl overflow-hidden h-40">
+                                <img src="https://images.unsplash.com/photo-1550751827-4bd374c3f58b?auto=format&fit=crop&q=80&w=400" alt="Algorithmic Enclosure" class="w-full h-full object-cover">
+                            </div>
+                            <div class="md:w-2/3">
+                                <h3 class="text-xl font-bold text-amber-400 mb-4 uppercase tracking-widest leading-snug">I. Argument & Conflict</h3>
+                                <p class="text-sm text-slate-400 leading-relaxed font-light">
+                                    The scitech landscape is divided. Proponents herald a new Enlightenment, while critics perceive a corporate enclosure of the human imagination.
+                                </p>
+                            </div>
+                        </div>
                     </div>
-                    <div class="glass-card p-8 bg-pink-500/5">
-                        <h3 class="text-lg font-bold text-pink-300 mb-3 uppercase tracking-wider">2. Facts vs. Inferences</h3>
-                        <p class="text-sm text-slate-400 leading-relaxed">
-                            <strong>Fact:</strong> AI predicts tokens/pixels based on statistical probability from training data. <br>
-                            <strong>Inference:</strong> Machines are "stealing" specific thoughts. In truth, output is a probabilistic synthesis lacking sentient intent.
-                        </p>
-                    </div>
-                    <!-- Concept 4 -->
-                    <div class="glass-card p-8 border border-white/5">
-                        <h3 class="text-lg font-bold text-slate-200 mb-3 uppercase tracking-wider">3. Media & Public Opinion</h3>
-                        <p class="text-sm text-slate-400 leading-relaxed">
-                            Media sensationalism often frames AI as an "extinction event" for artists. However, viral tools like "Have I Been Trained?" empower artists to reclaim agency, showing how digital media influences solution-building.
+                    <div class="glass-card p-12 bg-slate-500/5 border-white/5">
+                        <h3 class="text-xl font-bold text-slate-300 mb-6 uppercase tracking-widest">II. Data Veracity</h3>
+                        <p class="text-sm text-slate-400 leading-relaxed font-light">
+                            <strong>The Fact:</strong> Neural models synthesis outputs via probabilistic weightings. <br><br>
+                            <strong>The Inference:</strong> That these models possess a "creative spark." STS inquiry reveals that while the output mimics genius, it lacks the lived context of the master.
                         </p>
                     </div>
                 </div>
             </div>
-            <div class="reveal glass-card p-10">
-                <h3 class="text-xs font-black uppercase tracking-[0.3em] text-slate-500 mb-10 text-center">Global Stakeholder Sentiment</h3>
-                <div class="chart-wrapper">
+            <div class="reveal glass-card p-14 border-amber-500/10 shadow-2xl">
+                <h3 class="text-[10px] font-black uppercase tracking-[0.5em] text-slate-500 mb-16 text-center classical-font">Sentiment Distribution Analysis</h3>
+                <div class="relative h-[400px]">
                     <canvas id="sentimentChart"></canvas>
                 </div>
             </div>
         </div>
     </section>
 
-    <!-- TIMELINE (CONCEPT 5 & 6) -->
-    <section id="history" class="max-w-4xl mx-auto px-6 mb-40">
-        <div class="reveal text-center mb-20">
-            <h2 class="text-5xl font-black mb-4 tracking-tighter">THE EVOLUTION ARC</h2>
-            <p class="text-slate-400 font-light">History doesn't repeat, but it certainly rhymes in the face of innovation.</p>
+    <!-- TIMELINE (Lineage) -->
+    <section id="history" class="max-w-6xl mx-auto px-6 mb-56">
+        <div class="reveal text-center mb-28">
+            <h2 class="text-6xl font-black mb-8 tracking-tighter text-white uppercase">The Lineage</h2>
+            <p class="text-slate-500 font-medium tracking-[0.3em] uppercase text-[10px]">A Chronology of Algorithmic Disruption</p>
         </div>
         
         <div class="relative">
-            <div class="absolute left-1/2 transform -translate-x-1/2 w-px h-full bg-gradient-to-b from-blue-500 via-purple-500 to-transparent opacity-40"></div>
+            <div class="absolute left-1/2 transform -translate-x-1/2 w-px h-full bg-gradient-to-b from-amber-600 via-slate-700 to-transparent opacity-40"></div>
             
-            <div class="space-y-20">
-                <!-- Concept 5 & 6 -->
+            <div class="space-y-40">
+                <!-- Node 1 -->
                 <div class="reveal relative flex items-center justify-between w-full">
                     <div class="w-5/12 text-right">
-                        <h4 class="text-blue-400 font-black text-lg">1811: THE LUDDITE REVOLT</h4>
-                        <p class="text-xs text-slate-500 mt-2 font-medium">Textile workers smashed looms that threatened their livelihoods—the historical blueprint for today’s artistic resistance.</p>
+                        <div class="art-frame rounded-2xl overflow-hidden mb-8 h-56 w-full">
+                            <img src="https://images.unsplash.com/photo-1542281286-9e0a16bb7366?auto=format&fit=crop&q=80&w=800" alt="Mechanical Era" class="w-full h-full object-cover">
+                        </div>
+                        <h4 class="text-amber-500 font-black text-2xl uppercase mb-2">1811: THE BREAK</h4>
+                        <p class="text-[11px] text-slate-500 font-bold tracking-wider uppercase opacity-60">Luddite Resistance</p>
+                        <p class="text-[13px] text-slate-400 mt-4 leading-relaxed font-light italic">The Smashers of Looms provide the historical mirror for today's artistic mobilization against technological displacement.</p>
                     </div>
                     <div class="process-dot"></div>
-                    <div class="w-5/12"></div>
-                </div>
-                <div class="reveal relative flex items-center justify-between w-full">
-                    <div class="w-5/12"></div>
-                    <div class="process-dot" style="background:var(--neon-purple); box-shadow: 0 0 12px var(--neon-purple);"></div>
-                    <div class="w-5/12 text-left">
-                        <h4 class="text-purple-400 font-black text-lg">1950: THE TURING TEST</h4>
-                        <p class="text-xs text-slate-500 mt-2 font-medium">Alan Turing defines machine intelligence as indistinguishable human mimicry, setting the stage for contemporary inference debates.</p>
+                    <div class="w-5/12">
+                        <!-- Filling the blank side -->
+                        <div class="glass-card p-8 border-l-2 border-amber-500/30 bg-amber-500/5 opacity-40 hover:opacity-100 transition-opacity">
+                            <h5 class="text-[9px] font-black uppercase tracking-widest text-slate-500 mb-4">Lateral Reflection</h5>
+                            <p class="text-[11px] text-slate-400 italic leading-relaxed">"The specter of the machine is not its strength, but its perceived replacement of the soul's unique labor."</p>
+                        </div>
                     </div>
                 </div>
+
+                <!-- Node 2 -->
+                <div class="reveal relative flex items-center justify-between w-full">
+                    <div class="w-5/12">
+                        <!-- Filling the blank side -->
+                        <div class="glass-card p-8 border-r-2 border-white/20 bg-white/5 opacity-40 hover:opacity-100 transition-opacity text-right">
+                            <h5 class="text-[9px] font-black uppercase tracking-widest text-slate-500 mb-4">Lateral Reflection</h5>
+                            <p class="text-[11px] text-slate-400 italic leading-relaxed">"Can machines think? The question is less about their capability and more about our willingness to delegate truth to them."</p>
+                        </div>
+                    </div>
+                    <div class="process-dot" style="background:#fff; box-shadow: 0 0 20px #fff;"></div>
+                    <div class="w-5/12 text-left">
+                        <div class="art-frame rounded-2xl overflow-hidden mb-8 h-56 w-full">
+                            <img src="https://images.unsplash.com/photo-1517694712202-14dd9538aa97?auto=format&fit=crop&q=80&w=800" alt="Digital Logic" class="w-full h-full object-cover">
+                        </div>
+                        <h4 class="text-white font-black text-2xl uppercase mb-2">1950: THE GHOST</h4>
+                        <p class="text-[11px] text-slate-500 font-bold tracking-wider uppercase opacity-60">The Turing Simulation</p>
+                        <p class="text-[13px] text-slate-400 mt-4 leading-relaxed font-light italic">The threshold of human-machine indistinguishability is crossed in thought, shifting the definition of 'intellect' forever.</p>
+                    </div>
+                </div>
+
+                <!-- Node 3 -->
                 <div class="reveal relative flex items-center justify-between w-full">
                     <div class="w-5/12 text-right">
-                        <h4 class="text-pink-400 font-black text-lg">2023: THE HOLLYWOOD STRIKE</h4>
-                        <p class="text-xs text-slate-500 mt-2 font-medium">WGA/SAG-AFTRA strikes secure milestone protections against AI-generated likenesses and scripts.</p>
+                        <div class="art-frame rounded-2xl overflow-hidden mb-8 h-56 w-full">
+                            <img src="https://images.unsplash.com/photo-1675271591211-126ad94e495d?auto=format&fit=crop&q=80&w=800" alt="Generative Art" class="w-full h-full object-cover">
+                        </div>
+                        <h4 class="text-amber-400 font-black text-2xl uppercase mb-2">2023: THE AWAKENING</h4>
+                        <p class="text-[11px] text-slate-500 font-bold tracking-wider uppercase opacity-60">Labor Sovereignty</p>
+                        <p class="text-[13px] text-slate-400 mt-4 leading-relaxed font-light italic">Generative media catalyzes a global recognition of intellectual creative rights and the necessity of algorithmic ethics.</p>
                     </div>
-                    <div class="process-dot" style="background:var(--neon-pink); box-shadow: 0 0 12px var(--neon-pink);"></div>
-                    <div class="w-5/12"></div>
+                    <div class="process-dot"></div>
+                    <div class="w-5/12">
+                        <!-- Filling the blank side -->
+                        <div class="glass-card p-8 border-l-2 border-amber-500/30 bg-amber-500/5 opacity-40 hover:opacity-100 transition-opacity">
+                            <h5 class="text-[9px] font-black uppercase tracking-widest text-slate-500 mb-4">Lateral Reflection</h5>
+                            <p class="text-[11px] text-slate-400 italic leading-relaxed">"The model is a mirror of the collective, extracting brilliance from the commons without granting citizenship to the creators."</p>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
     </section>
 
-    <!-- ANALYSIS (CONCEPT 7, 8, 9) -->
-    <section id="analysis" class="max-w-7xl mx-auto px-6 mb-32">
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-10">
-            <!-- Concept 7 & 9 -->
-            <div class="reveal glass-card p-12 neon-border-blue">
-                <h3 class="text-3xl font-black mb-6 tracking-tight">Digital Colonialism</h3>
-                <p class="text-slate-400 text-sm mb-10 leading-relaxed font-light">
-                    The geography of AI relies on invisible labor. While Western developers capture the prestige, workers in Kenya and the Philippines perform labeling for $1.50/hour, reinforcing global power imbalances (Concept 7 & 9).
-                </p>
-                <div class="chart-wrapper">
-                    <canvas id="disparityChart"></canvas>
+    <!-- ANALYSIS -->
+    <section id="analysis" class="max-w-7xl mx-auto px-6 mb-48">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-16">
+            <div class="reveal glass-card border-b-2 border-amber-600/40">
+                <div class="h-72 art-frame">
+                    <img src="https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&q=80&w=1200" alt="Global Data" class="w-full h-full object-cover grayscale">
+                </div>
+                <div class="p-16">
+                    <h3 class="text-4xl font-black mb-8 tracking-tight classical-font uppercase leading-none">Digital <br> Colonialism</h3>
+                    <p class="text-slate-400 text-sm mb-12 leading-relaxed font-light italic opacity-80">
+                        Concept 7: Exploring the geographic disparity. Silicon Valley revenues dwarf the labeling wages paid to "ghost workers" in the Global South.
+                    </p>
+                    <div class="relative h-[350px]">
+                        <canvas id="disparityChart"></canvas>
+                    </div>
                 </div>
             </div>
             
-            <!-- Concept 3 & 8 -->
-            <div class="reveal glass-card p-12 neon-border-pink">
-                <h3 class="text-3xl font-black mb-6 tracking-tight">Influence Dynamics</h3>
-                <p class="text-slate-400 text-sm mb-10 leading-relaxed font-light">
-                    Groups like individual researchers and labor unions influence solutions by highlighting algorithmic bias and demanding human oversight as the primary safeguard (Concept 3 & 8).
-                </p>
-                <div class="chart-wrapper">
-                    <canvas id="stakeholderChart"></canvas>
+            <div class="reveal glass-card border-b-2 border-slate-500/40">
+                <div class="h-72 art-frame">
+                    <img src="https://images.unsplash.com/photo-1507146426996-ef05306b995a?auto=format&fit=crop&q=80&w=1200" alt="Human Vision" class="w-full h-full object-cover grayscale">
                 </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- BLUEPRINT SOLUTION (CONCEPT 10) -->
-    <section id="blueprint" class="max-w-7xl mx-auto px-6 mb-40">
-        <div class="reveal glass-card p-16 overflow-hidden relative border-blue-500/20">
-            <div class="absolute -top-10 -right-10 p-8 opacity-5 text-[15rem] font-black pointer-events-none text-white">SYS</div>
-            
-            <h2 class="text-4xl font-black mb-4 tracking-tighter uppercase text-white">The Triple-C Blueprint</h2>
-            <p class="text-slate-500 mb-12 max-w-2xl font-medium">Integrating diverse sources—from tech policy to labor rights—to propose a viable, ethical future (Concept 10).</p>
-            
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-10 relative z-10">
-                <div class="p-10 rounded-3xl bg-white/5 border border-white/5 hover:bg-white/10 transition-all">
-                    <div class="text-4xl mb-6 font-black opacity-30 text-white">01</div>
-                    <h4 class="text-2xl font-black text-blue-400 mb-4 uppercase">Consent</h4>
-                    <p class="text-sm text-slate-400 font-light leading-relaxed">Systemic Opt-in mandates based on the EU AI Act framework. Training must require explicit authorization from creative originators.</p>
-                </div>
-                <div class="p-10 rounded-3xl bg-white/5 border border-white/5 hover:bg-white/10 transition-all">
-                    <div class="text-4xl mb-6 font-black opacity-30 text-white">02</div>
-                    <h4 class="text-2xl font-black text-purple-400 mb-4 uppercase">Credit</h4>
-                    <p class="text-sm text-slate-400 font-light leading-relaxed">Cryptographic provenance inspired by C2PA standards. Every generated asset carries immutable links to its underlying sources.</p>
-                </div>
-                <div class="p-10 rounded-3xl bg-white/5 border border-white/5 hover:bg-white/10 transition-all">
-                    <div class="text-4xl mb-6 font-black opacity-30 text-white">03</div>
-                    <h4 class="text-2xl font-black text-pink-400 mb-4 uppercase">Compen-sation</h4>
-                    <p class="text-sm text-slate-400 font-light leading-relaxed">Compute-driven royalties. A portion of processing fees must circulate back to the creative ecosystem originators.</p>
+                <div class="p-16">
+                    <h3 class="text-4xl font-black mb-8 tracking-tight classical-font uppercase leading-none">Stakeholder <br> Dynamics</h3>
+                    <p class="text-slate-400 text-sm mb-12 leading-relaxed font-light italic opacity-80">
+                        Concept 8: Actor-Network Theory analysis. Mapping the power relations between human creators, corporate entities, and the "Black Box" algorithm.
+                    </p>
+                    <div class="relative h-[350px]">
+                        <canvas id="stakeholderChart"></canvas>
+                    </div>
                 </div>
             </div>
         </div>
     </section>
 
-    <footer class="py-20 border-t border-white/5 text-center">
-        <div class="text-slate-500 text-[10px] font-black uppercase tracking-[0.5em] mb-4">STS Final Project Submission</div>
-        <p class="text-slate-600 text-xs">Conceptualized for the Algorithmic Renaissance &copy; 2025</p>
+    <!-- BLUEPRINT SOLUTION -->
+    <section id="blueprint" class="max-w-7xl mx-auto px-6 mb-56">
+        <div class="reveal glass-card p-24 overflow-hidden relative border border-amber-500/20">
+            <div class="absolute -top-24 -right-24 p-10 opacity-[0.03] text-[25rem] font-black pointer-events-none text-amber-500 classical-font">SOL</div>
+            
+            <div class="flex flex-col md:flex-row gap-16 items-center mb-20">
+                <div class="md:w-1/4 art-frame rounded-full w-56 h-56">
+                    <img src="https://images.unsplash.com/photo-1550418290-a8d86ad674a6?auto=format&fit=crop&q=80&w=400" alt="Ethics Compass" class="w-full h-full object-cover">
+                </div>
+                <div class="md:w-3/4">
+                    <h2 class="text-6xl font-black mb-6 tracking-tighter uppercase text-white leading-none">The Triple-C <br> Blueprint</h2>
+                    <p class="text-amber-500 font-bold tracking-[0.4em] text-[10px] uppercase italic">Academic Policy Strategy (Concept 10)</p>
+                </div>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-16 relative z-10">
+                <div class="p-12 rounded-[3rem] bg-white/5 border border-white/5 hover:bg-amber-500/5 transition-all text-center group">
+                    <div class="text-6xl mb-10 font-black opacity-20 group-hover:opacity-100 group-hover:text-amber-500 transition-all classical-font">I</div>
+                    <h4 class="text-2xl font-black text-white mb-6 uppercase tracking-wide">Consent</h4>
+                    <p class="text-sm text-slate-400 font-light leading-relaxed">Mandatory Opt-in protocols. Algorithmic ingestion must require notarized authorization from human progenitors.</p>
+                </div>
+                <div class="p-12 rounded-[3rem] bg-white/5 border border-white/5 hover:bg-amber-500/5 transition-all text-center group">
+                    <div class="text-6xl mb-10 font-black opacity-20 group-hover:opacity-100 group-hover:text-slate-300 transition-all classical-font">II</div>
+                    <h4 class="text-2xl font-black text-slate-200 mb-6 uppercase tracking-wide">Credit</h4>
+                    <p class="text-sm text-slate-400 font-light leading-relaxed">Cryptographic provenance via C2PA standards. Every algorithmic artifact must bear a signature of its lineage.</p>
+                </div>
+                <div class="p-12 rounded-[3rem] bg-white/5 border border-white/5 hover:bg-amber-500/5 transition-all text-center group">
+                    <div class="text-6xl mb-10 font-black opacity-20 group-hover:opacity-100 group-hover:text-amber-400 transition-all classical-font">III</div>
+                    <h4 class="text-2xl font-black text-white mb-6 uppercase tracking-wide">Rewards</h4>
+                    <p class="text-sm text-slate-400 font-light leading-relaxed">Micro-royalty compute models. Training costs re-distributed into the ecosystem defining the model's capabilities.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- REFERENCES SECTION -->
+    <section id="references" class="max-w-7xl mx-auto px-6 mb-56">
+        <div class="reveal glass-card p-16 md:p-24 border border-white/5 bg-slate-900/40">
+            <h2 class="text-5xl font-black mb-16 tracking-tighter text-white uppercase text-center">Bibliography & References</h2>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-16 text-slate-400">
+                <div>
+                    <h3 class="text-amber-500 text-[10px] font-black uppercase tracking-[0.4em] mb-8 border-b border-amber-500/20 pb-4">Economic & Statistical Data</h3>
+                    <ul class="space-y-6 text-xs leading-relaxed">
+                        <li><strong>Goldman Sachs.</strong> (2023). <em>The Potentially Large Effects of Artificial Intelligence on Economic Growth.</em> Global Economics Analyst.</li>
+                        <li><strong>PwC.</strong> (2017). <em>Sizing the prize: What’s the real value of AI for your business?</em> [Report on the $15.7 trillion global GDP impact].</li>
+                        <li><strong>Ray, T.</strong> (2023). <em>GPT-4’s secret: A mixture-of-experts architecture with 1.8 trillion parameters.</em> ZDNET / Industry Analysis.</li>
+                    </ul>
+                </div>
+                <div>
+                    <h3 class="text-amber-500 text-[10px] font-black uppercase tracking-[0.4em] mb-8 border-b border-amber-500/20 pb-4">STS & Sociological Theory</h3>
+                    <ul class="space-y-6 text-xs leading-relaxed">
+                        <li><strong>Gray, M. L., & Suri, S.</strong> (2019). <em>Ghost Work: How to Stop Silicon Valley from Building a New Global Underclass.</em> Houghton Mifflin Harcourt.</li>
+                        <li><strong>Latour, B.</strong> (2005). <em>Reassembling the Social: An Introduction to Actor-Network-Theory.</em> Oxford University Press.</li>
+                        <li><strong>Winner, L.</strong> (1980). <em>Do Artifacts Have Politics?</em> Daedalus, Vol. 109, No. 1.</li>
+                    </ul>
+                </div>
+                <div>
+                    <h3 class="text-amber-500 text-[10px] font-black uppercase tracking-[0.4em] mb-8 border-b border-amber-500/20 pb-4">Technical & Legal Standards</h3>
+                    <ul class="space-y-6 text-xs leading-relaxed">
+                        <li><strong>C2PA.</strong> (2023). <em>Technical Specification v1.3: Coalition for Content Provenance and Authenticity.</em></li>
+                        <li><strong>US District Court.</strong> (2023). <em>Getty Images (US), Inc. v. Stability AI, Inc.</em> [Ongoing litigation regarding algorithmic consent].</li>
+                    </ul>
+                </div>
+                <div>
+                    <h3 class="text-amber-500 text-[10px] font-black uppercase tracking-[0.4em] mb-8 border-b border-amber-500/20 pb-4">Historical Context</h3>
+                    <ul class="space-y-6 text-xs leading-relaxed">
+                        <li><strong>Binfield, K.</strong> (2004). <em>Writings of the Luddites.</em> Johns Hopkins University Press. [Historical background for 1811].</li>
+                        <li><strong>Turing, A. M.</strong> (1950). <em>Computing Machinery and Intelligence.</em> Mind, 59(236), 433–460. [Foundational text for 1950].</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer class="py-32 border-t border-white/5 text-center">
+        <div class="text-slate-500 text-[11px] font-black uppercase tracking-[1em] mb-6 classical-font">The Algorithmic Renaissance</div>
+        <p class="text-slate-700 text-[10px] tracking-[0.5em] uppercase font-bold italic">STS Inquiry &copy; 2025 : Academic Submission</p>
     </footer>
 
     <script>
-        // --- MOVEMENT: Background Particles ---
+        // Progress Bar
+        window.addEventListener('scroll', () => {
+            const winScroll = document.body.scrollTop || document.documentElement.scrollTop;
+            const height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+            const scrolled = (winScroll / height) * 100;
+            document.getElementById('scrollProgress').style.width = scrolled + "%";
+        });
+
+        // Background Particles
         const canvas = document.getElementById('bgCanvas');
         const ctx = canvas.getContext('2d');
         let particles = [];
@@ -337,232 +486,152 @@
             constructor() {
                 this.x = Math.random() * canvas.width;
                 this.y = Math.random() * canvas.height;
-                this.size = Math.random() * 1.5 + 0.5;
-                this.speedX = Math.random() * 0.4 - 0.2;
-                this.speedY = Math.random() * 0.4 - 0.2;
+                this.size = Math.random() * 2.5 + 0.5;
+                this.speedX = Math.random() * 0.2 - 0.1;
+                this.speedY = Math.random() * 0.2 - 0.1;
+                this.color = Math.random() > 0.85 ? 'rgba(226, 184, 80, 0.25)' : 'rgba(255, 255, 255, 0.1)';
             }
             update() {
                 this.x += this.speedX;
                 this.y += this.speedY;
-                if (this.x > canvas.width) this.x = 0;
-                else if (this.x < 0) this.x = canvas.width;
-                if (this.y > canvas.height) this.y = 0;
-                else if (this.y < 0) this.y = canvas.height;
+                if (this.x > canvas.width) this.x = 0; else if (this.x < 0) this.x = canvas.width;
+                if (this.y > canvas.height) this.y = 0; else if (this.y < 0) this.y = canvas.height;
 
                 const dx = mouse.x - this.x;
                 const dy = mouse.y - this.y;
                 const dist = Math.sqrt(dx*dx + dy*dy);
-                if (dist < 150) {
-                    this.x -= dx * 0.01;
-                    this.y -= dy * 0.01;
+                if (dist < 200) {
+                    this.x -= dx * 0.02;
+                    this.y -= dy * 0.02;
                 }
             }
             draw() {
-                ctx.fillStyle = 'rgba(14, 165, 233, 0.2)';
-                ctx.beginPath();
-                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
-                ctx.fill();
+                ctx.fillStyle = this.color;
+                ctx.beginPath(); ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2); ctx.fill();
             }
         }
 
-        function init() {
-            for (let i = 0; i < 120; i++) particles.push(new Particle());
-        }
-
+        function init() { for (let i = 0; i < 160; i++) particles.push(new Particle()); }
         function animateBg() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
-            particles.forEach(p => {
-                p.update();
-                p.draw();
-            });
+            particles.forEach(p => { p.update(); p.draw(); });
             requestAnimationFrame(animateBg);
         }
-        init();
-        animateBg();
+        init(); animateBg();
 
-        // --- MOVEMENT: Scroll Reveals & Number Counter ---
+        // Counter Animation
         const animateNumbers = (el) => {
             const counters = el.querySelectorAll('.counter');
             counters.forEach(counter => {
+                if (counter.dataset.animated === "true") return;
+                counter.dataset.animated = "true";
+
                 const targetStr = counter.getAttribute('data-target');
                 const target = parseFloat(targetStr);
                 const prefix = counter.getAttribute('data-prefix') || '';
                 const suffix = counter.getAttribute('data-suffix') || '';
-                const duration = 2000;
+                const duration = 2500;
                 const startTime = performance.now();
 
                 const update = (now) => {
                     const elapsed = now - startTime;
                     const progress = Math.min(elapsed / duration, 1);
                     const current = progress * target;
-                    
-                    const displayValue = targetStr.includes('.')
-                        ? current.toFixed(1) 
-                        : Math.floor(current);
-
+                    const displayValue = targetStr.includes('.') ? current.toFixed(1) : Math.floor(current);
                     counter.innerText = prefix + displayValue + suffix;
-
-                    if (progress < 1) {
-                        requestAnimationFrame(update);
-                    } else {
-                        counter.innerText = prefix + targetStr + suffix;
-                    }
+                    if (progress < 1) requestAnimationFrame(update);
+                    else counter.innerText = prefix + targetStr + suffix;
                 };
                 requestAnimationFrame(update);
             });
         };
 
-        const reveal = () => {
-            const reveals = document.querySelectorAll('.reveal');
-            reveals.forEach(el => {
-                const windowHeight = window.innerHeight;
-                const elementTop = el.getBoundingClientRect().top;
-                const elementVisible = 150;
-                if (elementTop < windowHeight - elementVisible) {
-                    if (!el.classList.contains('active')) {
-                        el.classList.add('active');
-                        if (el.querySelector('.counter')) {
-                            animateNumbers(el);
-                        }
-                    }
+        const revealObserver = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('active');
+                    animateNumbers(entry.target);
                 }
             });
-        };
-        window.addEventListener('scroll', reveal);
-        window.onload = reveal;
+        }, { threshold: 0.15 });
 
-        // --- CHART.JS LOGIC ---
-        function wrapLabel(label) {
-            if (typeof label !== 'string') return label;
-            if (label.length <= 16) return label;
-            const words = label.split(' ');
-            const lines = [];
-            let currentLine = words[0];
-            for (let i = 1; i < words.length; i++) {
-                if ((currentLine + " " + words[i]).length <= 16) {
-                    currentLine += " " + words[i];
-                } else {
-                    lines.push(currentLine);
-                    currentLine = words[i];
-                }
-            }
-            lines.push(currentLine);
-            return lines;
-        }
+        document.querySelectorAll('.reveal').forEach(el => revealObserver.observe(el));
 
-        function processLabels(arr) { return arr.map(wrapLabel); }
-
-        Chart.defaults.color = '#64748b';
+        Chart.defaults.color = '#94a3b8';
         Chart.defaults.font.family = "'Plus Jakarta Sans', sans-serif";
         Chart.defaults.font.weight = '600';
-
+        
         const commonTooltip = {
-            backgroundColor: 'rgba(2, 6, 23, 0.95)',
-            titleFont: { size: 14, weight: 'bold' },
-            bodyFont: { size: 12 },
-            padding: 15,
-            cornerRadius: 12,
-            borderColor: 'rgba(255,255,255,0.1)',
+            backgroundColor: 'rgba(3, 7, 18, 0.98)',
+            borderColor: 'rgba(226, 184, 80, 0.3)',
             borderWidth: 1,
-            callbacks: {
-                title: function(tooltipItems) {
-                    const item = tooltipItems[0];
-                    let label = item.chart.data.labels[item.dataIndex];
-                    return Array.isArray(label) ? label.join(' ') : label;
-                }
-            }
+            padding: 18,
+            titleFont: { family: 'Cinzel', size: 14 }
         };
 
-        // Sentiment Chart (Cyberpunk Palette)
         new Chart(document.getElementById('sentimentChart'), {
             type: 'doughnut',
             data: {
-                labels: processLabels(['Optimistic Adopters', 'Ethical Skeptics', 'Undecided Majority']),
-                datasets: [{
-                    data: [35, 42, 23],
-                    backgroundColor: ['#0ea5e9', '#ec4899', '#1e293b'],
-                    borderWidth: 0,
-                    hoverOffset: 20
-                }]
+                labels: ['Enlightened Adopters', 'Ethical Skeptics', 'Undecided Majority'].map(wrapLabel),
+                datasets: [{ data: [35, 42, 23], backgroundColor: ['#e2b850', '#475569', '#111827'], borderWidth: 0, hoverOffset: 30 }]
             },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                cutout: '80%',
-                plugins: {
-                    legend: { position: 'bottom', labels: { padding: 30, usePointStyle: true, font: { size: 12 } } },
-                    tooltip: commonTooltip
-                }
+            options: { 
+                responsive: true, maintainAspectRatio: false, cutout: '85%', 
+                plugins: { legend: { position: 'bottom', labels: { padding: 40, usePointStyle: true, font: { size: 11, weight: '700' } } }, tooltip: commonTooltip } 
             }
         });
 
-        // Disparity Chart (Cyberpunk Palette)
         new Chart(document.getElementById('disparityChart'), {
             type: 'bar',
             data: {
-                labels: processLabels(['US ML Engineer', 'Kenya Data Labeler', 'Philippines Moderator', 'Standard US Artist']),
-                datasets: [{
-                    data: [92, 1.5, 3.8, 38],
-                    backgroundColor: ['#0ea5e9', '#ec4899', '#7c3aed', '#64748b'],
-                    borderRadius: 12,
-                    barThickness: 30
+                labels: ['Silicon Valley Revenue', 'Global South Wages', 'Data Infrastructure', 'Artist Royalties'].map(wrapLabel),
+                datasets: [{ 
+                    data: [98, 0.4, 65, 12], 
+                    backgroundColor: ['#e2b850', '#f43f5e', '#475569', '#38bdf8'], 
+                    borderRadius: 18, 
+                    barThickness: 35 
                 }]
             },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: { display: false },
-                    tooltip: commonTooltip
-                },
-                scales: {
-                    y: { beginAtZero: true, grid: { color: 'rgba(255,255,255,0.03)' }, ticks: { font: { size: 10 } } },
-                    x: { grid: { display: false }, ticks: { font: { size: 10 } } }
-                }
+            options: { 
+                responsive: true, maintainAspectRatio: false, 
+                plugins: { legend: { display: false }, tooltip: commonTooltip }, 
+                scales: { 
+                    y: { beginAtZero: true, grid: { color: 'rgba(255,255,255,0.02)' }, title: { display: true, text: 'INDEXED VALUE (B$)' } }, 
+                    x: { grid: { display: false } } 
+                } 
             }
         });
 
-        // Stakeholder Chart (Cyberpunk Palette)
         new Chart(document.getElementById('stakeholderChart'), {
             type: 'bubble',
             data: {
                 datasets: [
-                    {
-                        label: 'Tech Corporations (OpenAI/Google)',
-                        data: [{ x: 95, y: 25, r: 25 }],
-                        backgroundColor: 'rgba(14, 165, 233, 0.4)',
-                        borderColor: '#0ea5e9',
-                        borderWidth: 2
-                    },
-                    {
-                        label: 'Labor Unions (WGA/SAG-AFTRA)',
-                        data: [{ x: 45, y: 90, r: 18 }],
-                        backgroundColor: 'rgba(236, 72, 153, 0.4)',
-                        borderColor: '#ec4899',
-                        borderWidth: 2
-                    },
-                    {
-                        label: 'Regulatory Bodies (EU Commission)',
-                        data: [{ x: 65, y: 75, r: 20 }],
-                        backgroundColor: 'rgba(168, 85, 247, 0.4)',
-                        borderColor: '#a855f7',
-                        borderWidth: 2
-                    }
+                    { label: 'Corporate Tech', data: [{ x: 95, y: 25, r: 30 }], backgroundColor: 'rgba(226, 184, 80, 0.4)', borderColor: '#e2b850', borderWidth: 2 },
+                    { label: 'Artist Unions', data: [{ x: 45, y: 90, r: 22 }], backgroundColor: 'rgba(255, 255, 255, 0.1)', borderColor: '#fff', borderWidth: 2 },
+                    { label: 'Ethics Regulators', data: [{ x: 65, y: 75, r: 25 }], backgroundColor: 'rgba(71, 85, 105, 0.4)', borderColor: '#475569', borderWidth: 2 },
+                    { label: 'The Black Box (AI)', data: [{ x: 98, y: 5, r: 40 }], backgroundColor: 'rgba(56, 189, 248, 0.2)', borderColor: '#38bdf8', borderWidth: 1 }
                 ]
             },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: { position: 'top', labels: { usePointStyle: true, font: { size: 10 } } },
-                    tooltip: commonTooltip
-                },
-                scales: {
-                    x: { title: { display: true, text: 'INFLUENCE POWER', font: { size: 10, weight: '800' } }, grid: { color: 'rgba(255,255,255,0.03)' } },
-                    y: { title: { display: true, text: 'ETHICAL CONCERN', font: { size: 10, weight: '800' } }, grid: { color: 'rgba(255,255,255,0.03)' } }
-                }
+            options: { 
+                responsive: true, maintainAspectRatio: false, 
+                plugins: { legend: { position: 'top', labels: { usePointStyle: true, font: { size: 10 } } }, tooltip: commonTooltip }, 
+                scales: { 
+                    x: { title: { display: true, text: 'INFLUENCE POWER' }, grid: { color: 'rgba(255,255,255,0.02)' } }, 
+                    y: { title: { display: true, text: 'ETHICAL AGENCY' }, grid: { color: 'rgba(255,255,255,0.02)' } } 
+                } 
             }
         });
+
+        function wrapLabel(label) {
+            if (typeof label !== 'string' || label.length <= 16) return label;
+            const words = label.split(' ');
+            const lines = []; let currentLine = words[0];
+            for (let i = 1; i < words.length; i++) {
+                if ((currentLine + " " + words[i]).length <= 16) currentLine += " " + words[i];
+                else { lines.push(currentLine); currentLine = words[i]; }
+            }
+            lines.push(currentLine); return lines;
+        }
     </script>
 </body>
 </html>
